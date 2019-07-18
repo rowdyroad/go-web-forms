@@ -2,6 +2,15 @@ package forms
 
 import "html/template"
 
+var formHeader = template.Must(template.New("form/header").Parse(`
+	<form {{if .}}{{if .URL}}action="{{.URL}}"{{end}}{{end}} method="POST">
+`))
+
+var formFooter = template.Must(template.New("form/header").Parse(`
+		<button type="submit" class="btn btn-primary">{{if .}}{{if .SubmitBtnCaption}}{{.SubmitBtnCaption}}{{else}}Submit{{end}}{{end}}</button>
+	</form>
+`))
+
 var formArrayHeader = template.Must(template.New("form/arrayHeader").Parse(`
 	{{if .Label}}
 		<h4>

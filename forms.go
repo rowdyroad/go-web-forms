@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -15,18 +14,21 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type iPage interface {
-	Title() string
+type Options struct {
+	URL              string
+	SubmitBtnCaption string
 }
 
-func MakeHTML(data interface{}, out io.Writer) bool {
+func MakeHTML(data interface{}, out io.Writer, options *Options) bool {
 	templates := map[string]bytes.Buffer{}
-	out.Write([]byte(`<form method="POST">`))
+	formHeader.Execute(out, options)
 	processField(out, reflect.ValueOf(data), nil, templates)
 	for _, xx := range templates {
 		out.Write(xx.Bytes())
 	}
-	out.Write([]byte(`<button type="submit" class="btn btn-primary">Submit</button></form>`))
+	formFooter.Execute(out, options)
+
+	//out.Write([]byte(`<button type="submit" class="btn btn-primary">Submit</button></form>`))
 	return true
 }
 
@@ -141,7 +143,6 @@ func parseTags(sf reflect.StructField) formField {
 	tag = reHeadSpaces.ReplaceAllString(tag, "")
 	tag = reHeadSpacesML.ReplaceAllString(tag, "\n")
 	if err := yaml.Unmarshal([]byte(tag), &ff); err != nil {
-		log.Println("Error on", sf.Name, sf.Tag)
 		panic(err)
 	}
 	ff.ID = uuid.New().String()
@@ -152,7 +153,6 @@ func parseTags(sf reflect.StructField) formField {
 		ff.Label = sf.Name
 	}
 
-	log.Println(sf.Name, ff)
 	return ff
 }
 
