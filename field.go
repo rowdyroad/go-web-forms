@@ -35,5 +35,6 @@ func (t formField) Copy() formField {
 		Placeholder:      t.Placeholder,
 		Readonly:         t.Readonly,
 		Options:          t.Options,
+		Length:           t.Length,
 	}
 }

@@ -3,11 +3,38 @@ package forms
 import "html/template"
 
 var formHeader = template.Must(template.New("form/header").Parse(`
+	<script>
+		function goWebFormsUUID() {
+			return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+				var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+				return v.toString(16);
+			});
+		}
+
+		var goWebFormsIndexes = {};
+		function goWebFormsAddArrayItem(id, indexMax) {
+			if (!goWebFormsIndexes[id]) {
+				goWebFormsIndexes[id] = indexMax
+			}
+			var index = goWebFormsIndexes[id];
+			var cnt = document.getElementById('template-' + id)
+								.innerHTML
+								.replace(new RegExp('template-'+id+'-id', 'g'), goWebFormsUUID())
+								.replace(new RegExp('template-'+id+'-name', 'g'), id+'['+goWebFormsIndexes[id]+']')
+								.replace(new RegExp('display:none;', 'g'), '');
+
+			var e = document.createElement('div');
+			e.innerHTML = cnt;
+
+			document.getElementById('array-'+id).appendChild(e);
+			goWebFormsIndexes[id] = index + 1;
+		}
+	</script>
 	<form {{if .}}{{if .URL}}action="{{.URL}}"{{end}}{{end}} method="POST">
 `))
 
-var formFooter = template.Must(template.New("form/header").Parse(`
-		<button type="submit" class="btn btn-primary">{{if .}}{{if .SubmitBtnCaption}}{{.SubmitBtnCaption}}{{else}}Submit{{end}}{{end}}</button>
+var formFooter = template.Must(template.New("form/footer").Parse(`
+		<button type="submit" class="btn btn-primary">{{if .}}{{if .SubmitBtnCaption}}{{.SubmitBtnCaption}}{{else}}Submit{{end}}{{else}}Submit{{end}}</button>
 	</form>
 `))
 
@@ -25,7 +52,7 @@ var formArrayFooter = template.Must(template.New("form/arrayFooter").Parse(`
 	</div>
 	{{if not .Readonly}}
 		<div style="margin:0.4em;margin-bottom:1em">
-			<input type="button" class="btn btn-secondary" value="{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}" onclick="addArrayItem('{{.Name}}', {{.Length}})"/>
+			<input type="button" class="btn btn-secondary" value="{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}" onclick="goWebFormsAddArrayItem('{{.Name}}', {{.Length}})"/>
 		</div>
 	{{end}}
 `))
@@ -87,7 +114,8 @@ var formTextarea = template.Must(template.New("form/textarea").Parse(`
 var formCheckbox = template.Must(template.New("form/checkbox").Parse(`
 	<div class="form-group" style="padding-left: {{.Indent}}em">
 		<div class="form-check">
-			<input class="form-check-input" type="{{.Type}}" name="{{.Name}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} {{if .Value}}checked{{end}}  class="form-control" id="{{.ID}}" value="" placeholder="{{.Placeholder}}"/>
+			<input class="form-check-input" type="{{.Type}}" name="{{.Name}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} {{if .Value}}checked{{end}}  class="form-control" id="{{.ID}}" value="true" placeholder="{{.Placeholder}}"/>
+			<input type="hidden" name="{{.Name}}" value="false"/>
 			{{if not .IsArrayItem }} {{if .Label}} <label class="form-check-label" for="{{.ID}}">{{.Label}}</label>{{end}} {{end}}
 		</div>
 	</div>

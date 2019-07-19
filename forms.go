@@ -27,31 +27,32 @@ func MakeHTML(data interface{}, out io.Writer, options *Options) bool {
 		out.Write(xx.Bytes())
 	}
 	formFooter.Execute(out, options)
-
-	//out.Write([]byte(`<button type="submit" class="btn btn-primary">Submit</button></form>`))
 	return true
 }
 
-func ParseForm(form url.Values, data interface{}) {
+func ParseForm(form url.Values, data interface{}) interface{} {
 	src := reflect.ValueOf(data)
-	parseField(reflect.Indirect(reflect.ValueOf(data)), src, "", &form)
+	dst := reflect.New(reflect.Indirect(src).Type()).Elem()
+	parseField(dst, src, "", &form)
+	return dst.Interface()
 }
 
 func processField(f io.Writer, value reflect.Value, field *formField, xTemplates map[string]bytes.Buffer) {
 	switch value.Type().Kind() {
 	case reflect.Array, reflect.Slice:
+
 		var fieldTemplate *formField
 		if field != nil {
+			field.Length = value.Len()
 			ft := field.Copy()
 			fieldTemplate = &ft
-			fieldTemplate.ID = fmt.Sprintf("id-%s-new", field.Name)
-			fieldTemplate.Name = fmt.Sprintf("name-%s-new", field.Name)
+			fieldTemplate.ID = fmt.Sprintf("template-%s-id", field.Name)
+			fieldTemplate.Name = fmt.Sprintf("template-%s-name", field.Name)
 			fieldTemplate.IsArrayItem = true
-			fieldTemplate.Length = value.Len()
-			formArrayHeader.Execute(f, fieldTemplate)
+			formArrayHeader.Execute(f, field)
 
 			tx := bytes.Buffer{}
-			tx.Write([]byte(fmt.Sprintf(`<script type="x-template" id="new-%s">`, fieldTemplate.Name)))
+			tx.Write([]byte(fmt.Sprintf(`<script type="x-template" id="template-%s">`, field.Name)))
 			formArrayItemWrapperHeader.Execute(&tx, fieldTemplate)
 			processField(&tx, reflect.Zero(reflect.TypeOf(value.Interface()).Elem()), fieldTemplate, xTemplates)
 			formArrayItemWrapperFooter.Execute(&tx, fieldTemplate)
@@ -72,7 +73,7 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 		}
 
 		if field != nil {
-			formArrayFooter.Execute(f, fieldTemplate)
+			formArrayFooter.Execute(f, field)
 		}
 
 		return
@@ -204,6 +205,9 @@ func parseField(value reflect.Value, src reflect.Value, name string, form *url.V
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		v, _ := strconv.ParseUint(form.Get(name), 10, 64)
 		value.SetUint(v)
+	case reflect.Float32, reflect.Float64:
+		v, _ := strconv.ParseFloat(form.Get(name), 64)
+		value.SetFloat(v)
 	case reflect.String:
 		value.SetString(form.Get(name))
 	}
