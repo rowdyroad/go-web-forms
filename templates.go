@@ -4,6 +4,11 @@ import "html/template"
 
 var formHeader = template.Must(template.New("form/header").Parse(`
 	<script>
+		String.prototype.replaceAll = function(search, replacement) {
+			var target = this;
+			return target.split(search).join(replacement);
+		};
+
 		function goWebFormsUUID() {
 			return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 				var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -19,9 +24,8 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 			var index = goWebFormsIndexes[id];
 			var cnt = document.getElementById('template-' + id)
 								.innerHTML
-								.replace(new RegExp('template-'+id+'-id', 'g'), goWebFormsUUID())
-								.replace(new RegExp('template-'+id+'-name', 'g'), id+'['+goWebFormsIndexes[id]+']')
-								.replace(new RegExp('display:none;', 'g'), '');
+								.replaceAll('template-'+id+'-id', goWebFormsUUID())
+								.replaceAll('template-'+id+'-name', id+'['+goWebFormsIndexes[id]+']');
 
 			var e = document.createElement('div');
 			e.innerHTML = cnt;

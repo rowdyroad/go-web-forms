@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -177,10 +178,11 @@ func parseField(value reflect.Value, src reflect.Value, name string, form *url.V
 		}
 	case reflect.Array, reflect.Slice:
 		i := 0
-		re := regexp.MustCompile(fmt.Sprintf("%s\\[(\\d+)\\]", name))
+		re := regexp.MustCompile(fmt.Sprintf(`%s\[(\d+)\]`, regexp.QuoteMeta(name)))
 		for key := range *form {
 			if regs := re.FindStringSubmatch(key); len(regs) == 2 {
 				id, _ := strconv.ParseInt(regs[1], 10, 64)
+				log.Println(regs[0], id, key)
 				value.Set(reflect.Append(value, reflect.Zero(value.Type().Elem())))
 				if !src.IsValid() || int(id) >= src.Len() {
 					parseField(reflect.Indirect(value.Index(i)), reflect.Value{}, regs[0], form)
