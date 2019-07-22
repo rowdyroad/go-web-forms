@@ -44,7 +44,7 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 
 		Array.prototype.reduce||Object.defineProperty(Array.prototype,"reduce",{value:function(e){if(null===this)throw new TypeError("Array.prototype.reduce called on null or undefined");if("function"!=typeof e)throw new TypeError(e+" is not a function");var n,r=Object(this),t=r.length>>>0,o=0;if(arguments.length>=2)n=arguments[1];else{for(;t>o&&!(o in r);)o++;if(o>=t)throw new TypeError("Reduce of empty array with no initial value");n=r[o++]}for(;t>o;)o in r&&(n=e(n,r[o],o,r)),o++;return n}}),window.goForm2JSON||(window.goForm2JSON=function(e){var n={},r=[];if("function"==typeof HTMLFormElement&&e instanceof HTMLFormElement)for(var t in e.elements)(e.elements[t]instanceof HTMLInputElement||e.elements[t]instanceof HTMLSelectElement||e.elements[t]instanceof HTMLTextAreaElement)&&r.push({name:e.elements[t].name,value:e.elements[t].value});else Array.isArray(e)&&(r=e);return n=r.reduce(function(e,n){var r=e,t=n.name.split(".");return t.forEach(function(e,o){var a=e.replace(/\[[0-9]*\]$/,"");if(r.hasOwnProperty(a)||(r[a]=new RegExp("[[0-9]*]$").test(e)?[]:{}),r[a]instanceof Array){var i=parseInt((e.match(new RegExp("([0-9]+)]$"))||[]).pop(),10);return i=isNaN(i)?r[a].length:i,r[a][i]=r[a][i]||{},o===t.length-1?r[a][i]=n.value:r=r[a][i]}return o===t.length-1?r[a]=n.value:r=r[a]}),e},{})});
 		if (!window.goWebFormSubmit) {
-			function goWebFormSubmit(id) {
+			window.goWebFormSubmit = function(id) {
 				var data = window.goForm2JSON(document.getElementById(id));
 				fetch(id, {
 					method: "POST",
@@ -56,7 +56,7 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 			}
 		}
 	</script>
-	<form id="{{.ID}}" action="javascript:goWebFormSubmit('{{.ID}}')">
+	<form id="{{.ID}}" action="javascript:window.goWebFormSubmit('{{.ID}}')">
 `))
 
 var formFooter = template.Must(template.New("form/footer").Parse(`
