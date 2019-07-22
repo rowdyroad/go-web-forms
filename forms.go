@@ -3,6 +3,7 @@ package forms
 import (
 	"bytes"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/url"
@@ -16,26 +17,25 @@ import (
 )
 
 type Options struct {
+	ID               template.JS
 	URL              string
 	SubmitBtnCaption string
 }
 
-func MakeHTML(data interface{}, out io.Writer, options *Options) bool {
+func MakeHTML(data interface{}, out io.Writer, options *Options) string {
 	templates := map[string]bytes.Buffer{}
+	if options == nil {
+		options = &Options{}
+	}
+	id := strings.Replace(uuid.New().String(), "-", "", -1)
+	options.ID = template.JS(id)
 	formHeader.Execute(out, options)
 	processField(out, reflect.ValueOf(data), nil, templates)
 	for _, xx := range templates {
 		out.Write(xx.Bytes())
 	}
 	formFooter.Execute(out, options)
-	return true
-}
-
-func ParseForm(form url.Values, data interface{}) interface{} {
-	src := reflect.ValueOf(data)
-	dst := reflect.New(reflect.Indirect(src).Type()).Elem()
-	parseField(dst, src, "", &form)
-	return dst.Interface()
+	return id
 }
 
 func processField(f io.Writer, value reflect.Value, field *formField, xTemplates map[string]bytes.Buffer) {
@@ -101,7 +101,7 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 			}
 
 			if field != nil {
-				fd.Name = field.Name + "[" + fd.Name + "]"
+				fd.Name = field.Name + "." + fd.Name
 				fd.Readonly = field.Readonly
 				fd.Disabled = field.Disabled
 			}
@@ -168,7 +168,7 @@ func parseField(value reflect.Value, src reflect.Value, name string, form *url.V
 				continue
 			}
 			if name != "" {
-				ff.Name = name + "[" + ff.Name + "]"
+				ff.Name = name + "." + ff.Name
 			}
 			if src.IsValid() {
 				parseField(value.Field(i), src.Field(i), ff.Name, form)

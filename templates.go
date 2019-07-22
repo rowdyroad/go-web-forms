@@ -4,37 +4,59 @@ import "html/template"
 
 var formHeader = template.Must(template.New("form/header").Parse(`
 	<script>
-		String.prototype.replaceAll = function(search, replacement) {
-			var target = this;
-			return target.split(search).join(replacement);
-		};
-
-		function goWebFormsUUID() {
-			return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-				var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-				return v.toString(16);
-			});
+		if (!String.prototype.replaceAll) {
+			String.prototype.replaceAll = function(search, replacement) {
+				var target = this;
+				return target.split(search).join(replacement);
+			};
 		}
 
-		var goWebFormsIndexes = {};
-		function goWebFormsAddArrayItem(id, indexMax) {
-			if (!goWebFormsIndexes[id]) {
-				goWebFormsIndexes[id] = indexMax
+		if (!window.goWebFormsUUID) {
+			window.goWebFormsUUID = function() {
+				return 'xxxxxxxxxxxxxxxxyxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+					var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+					return v.toString(16);
+				});
 			}
-			var index = goWebFormsIndexes[id];
-			var cnt = document.getElementById('template-' + id)
-								.innerHTML
-								.replaceAll('template-'+id+'-id', goWebFormsUUID())
-								.replaceAll('template-'+id+'-name', id+'['+goWebFormsIndexes[id]+']');
+		}
 
-			var e = document.createElement('div');
-			e.innerHTML = cnt;
+		if (!window.goWebFormsIndexes) {
+			window.goWebFormsIndexes = {};
+		}
 
-			document.getElementById('array-'+id).appendChild(e);
-			goWebFormsIndexes[id] = index + 1;
+		if (!window.goWebFormsIndexes) {
+			window.goWebFormsIndexes = function(id, indexMax) {
+				if (!goWebFormsIndexes[id]) {
+					goWebFormsIndexes[id] = indexMax
+				}
+				var index = goWebFormsIndexes[id];
+				var cnt = document.getElementById('template-' + id)
+									.innerHTML
+									.replaceAll('template-'+id+'-id', goWebFormsUUID())
+									.replaceAll('template-'+id+'-name', id+'['+goWebFormsIndexes[id]+']');
+
+				var e = document.createElement('div');
+				e.innerHTML = cnt;
+				document.getElementById('array-'+id).appendChild(e);
+				goWebFormsIndexes[id] = index + 1;
+			}
+		}
+
+		Array.prototype.reduce||Object.defineProperty(Array.prototype,"reduce",{value:function(e){if(null===this)throw new TypeError("Array.prototype.reduce called on null or undefined");if("function"!=typeof e)throw new TypeError(e+" is not a function");var n,r=Object(this),t=r.length>>>0,o=0;if(arguments.length>=2)n=arguments[1];else{for(;t>o&&!(o in r);)o++;if(o>=t)throw new TypeError("Reduce of empty array with no initial value");n=r[o++]}for(;t>o;)o in r&&(n=e(n,r[o],o,r)),o++;return n}}),window.goForm2JSON||(window.goForm2JSON=function(e){var n={},r=[];if("function"==typeof HTMLFormElement&&e instanceof HTMLFormElement)for(var t in e.elements)(e.elements[t]instanceof HTMLInputElement||e.elements[t]instanceof HTMLSelectElement||e.elements[t]instanceof HTMLTextAreaElement)&&r.push({name:e.elements[t].name,value:e.elements[t].value});else Array.isArray(e)&&(r=e);return n=r.reduce(function(e,n){var r=e,t=n.name.split(".");return t.forEach(function(e,o){var a=e.replace(/\[[0-9]*\]$/,"");if(r.hasOwnProperty(a)||(r[a]=new RegExp("[[0-9]*]$").test(e)?[]:{}),r[a]instanceof Array){var i=parseInt((e.match(new RegExp("([0-9]+)]$"))||[]).pop(),10);return i=isNaN(i)?r[a].length:i,r[a][i]=r[a][i]||{},o===t.length-1?r[a][i]=n.value:r=r[a][i]}return o===t.length-1?r[a]=n.value:r=r[a]}),e},{})});
+		if (!window.goWebFormSubmit) {
+			function goWebFormSubmit(id) {
+				var data = window.goForm2JSON(document.getElementById(id));
+				fetch(id, {
+					method: "POST",
+					headers: {
+						"Content-type":"application/json"
+					},
+					body: JSON.stringify(data)
+				})
+			}
 		}
 	</script>
-	<form {{if .}}{{if .URL}}action="{{.URL}}"{{end}}{{end}} method="POST">
+	<form id="{{.ID}}" action="javascript:goWebFormSubmit('{{.ID}}')">
 `))
 
 var formFooter = template.Must(template.New("form/footer").Parse(`
@@ -56,7 +78,7 @@ var formArrayFooter = template.Must(template.New("form/arrayFooter").Parse(`
 	</div>
 	{{if not .Readonly}}
 		<div style="margin:0.4em;margin-bottom:1em">
-			<input type="button" class="btn btn-secondary" value="{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}" onclick="goWebFormsAddArrayItem('{{.Name}}', {{.Length}})"/>
+			<button class="btn btn-secondary" onclick="goWebFormsAddArrayItem('{{.Name}}', {{.Length}})>{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}</button>
 		</div>
 	{{end}}
 `))
@@ -85,7 +107,7 @@ var formStructHeader = template.Must(template.New("form/structHeader").Parse(`
 var formArrayItemWrapperFooter = template.Must(template.New("form/arrayItemWrapperFooter").Parse(`
 	{{if not .Readonly}}
 		<div style="text-align:right; padding:0.4em 0">
-			<input type="button" class="btn btn-danger" onclick="javascript:document.getElementById('item-{{.Name}}').remove()" value="{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}"/>
+			<button class="btn btn-danger" onclick="javascript:document.getElementById('item-{{.Name}}').remove()">{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}"</button>
 		</div>
 	{{end}}
 	</div>

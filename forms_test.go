@@ -1,8 +1,7 @@
 package forms
 
 import (
-	"bytes"
-	"fmt"
+	"net/http"
 	"testing"
 )
 
@@ -109,8 +108,13 @@ func TestMain(t *testing.T) {
 		ReadonlyTextarea:    "readonly textarea",
 		ReadonlyCustomLabel: "readonly custom label",
 	}
-	out := bytes.Buffer{}
-	MakeHTML(data, &out, nil)
 
-	fmt.Print(out.String())
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "text/html")
+		w.Write([]byte("<!DOCTYPE html><html><body>"))
+		MakeHTML(data, w, nil)
+		w.Write([]byte("</body></html>"))
+	})
+
+	http.ListenAndServe(":8011", nil)
 }
