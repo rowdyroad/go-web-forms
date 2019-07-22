@@ -3,7 +3,6 @@ package forms
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"io"
 	"log"
 	"net/url"
@@ -16,19 +15,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Options struct {
-	ID               template.JS
-	URL              string
-	SubmitBtnCaption string
-}
-
-func MakeHTML(data interface{}, out io.Writer, options *Options) string {
+func MakeHTML(id string, data interface{}, out io.Writer) string {
 	templates := map[string]bytes.Buffer{}
-	if options == nil {
-		options = &Options{}
+	options := map[string]interface{}{
+		"ID": id,
 	}
-	id := strings.Replace(uuid.New().String(), "-", "", -1)
-	options.ID = template.JS(id)
 	formHeader.Execute(out, options)
 	processField(out, reflect.ValueOf(data), nil, templates)
 	for _, xx := range templates {

@@ -2,7 +2,10 @@ package forms
 
 import (
 	"net/http"
+	"strings"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 func TestMain(t *testing.T) {
@@ -112,7 +115,7 @@ func TestMain(t *testing.T) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "text/html")
 		w.Write([]byte("<!DOCTYPE html><html><body>"))
-		MakeHTML(data, w, nil)
+		MakeHTML(strings.Replace(uuid.New().String(), "-", "", -1), data, w)
 		w.Write([]byte("</body></html>"))
 	})
 
