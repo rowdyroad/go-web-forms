@@ -4,24 +4,25 @@ import "html/template"
 
 var formHeader = template.Must(template.New("form/header").Parse(`
 	<script>
-		if (!window.goInit) {
-			window.goInit = true;
-			if (!String.prototype.replaceAll) {
-				String.prototype.replaceAll = function(search, replacement) {
-					var target = this;
-					return target.split(search).join(replacement);
-				};
-			}
-
+		if (!String.prototype.replaceAll) {
+			String.prototype.replaceAll = function(search, replacement) {
+				var target = this;
+				return target.split(search).join(replacement);
+			};
+		}
+		if (!window.goWebFormsUUID) {
 			window.goWebFormsUUID = function() {
 				return 'xxxxxxxxxxxxxxxxyxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 					var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
 					return v.toString(16);
 				});
 			}
-
+		}
+		if (!window.goWebFormsIndexes) {
 			window.goWebFormsIndexes = {};
-			window.goWebFormsIndexes = function(id, indexMax) {
+		}
+		if (!window.goWebFormsAddArrayItem) {
+			window.goWebFormsAddArrayItem = function(id, indexMax) {
 				if (!goWebFormsIndexes[id]) {
 					goWebFormsIndexes[id] = indexMax
 				}
@@ -36,8 +37,10 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 				document.getElementById('array-'+id).appendChild(e);
 				goWebFormsIndexes[id] = index + 1;
 			}
+		}
 
-			Array.prototype.reduce||Object.defineProperty(Array.prototype,"reduce",{value:function(e){if(null===this)throw new TypeError("Array.prototype.reduce called on null or undefined");if("function"!=typeof e)throw new TypeError(e+" is not a function");var n,r=Object(this),t=r.length>>>0,o=0;if(arguments.length>=2)n=arguments[1];else{for(;t>o&&!(o in r);)o++;if(o>=t)throw new TypeError("Reduce of empty array with no initial value");n=r[o++]}for(;t>o;)o in r&&(n=e(n,r[o],o,r)),o++;return n}}),window.goForm2JSON||(window.goForm2JSON=function(e){var n={},r=[];if("function"==typeof HTMLFormElement&&e instanceof HTMLFormElement)for(var t in e.elements)(e.elements[t]instanceof HTMLInputElement||e.elements[t]instanceof HTMLSelectElement||e.elements[t]instanceof HTMLTextAreaElement)&&r.push({name:e.elements[t].name,value:e.elements[t].value});else Array.isArray(e)&&(r=e);return n=r.reduce(function(e,n){var r=e,t=n.name.split(".");return t.forEach(function(e,o){var a=e.replace(/\[[0-9]*\]$/,"");if(r.hasOwnProperty(a)||(r[a]=new RegExp("[[0-9]*]$").test(e)?[]:{}),r[a]instanceof Array){var i=parseInt((e.match(new RegExp("([0-9]+)]$"))||[]).pop(),10);return i=isNaN(i)?r[a].length:i,r[a][i]=r[a][i]||{},o===t.length-1?r[a][i]=n.value:r=r[a][i]}return o===t.length-1?r[a]=n.value:r=r[a]}),e},{})});
+		Array.prototype.reduce||Object.defineProperty(Array.prototype,"reduce",{value:function(e){if(null===this)throw new TypeError("Array.prototype.reduce called on null or undefined");if("function"!=typeof e)throw new TypeError(e+" is not a function");var n,r=Object(this),t=r.length>>>0,o=0;if(arguments.length>=2)n=arguments[1];else{for(;t>o&&!(o in r);)o++;if(o>=t)throw new TypeError("Reduce of empty array with no initial value");n=r[o++]}for(;t>o;)o in r&&(n=e(n,r[o],o,r)),o++;return n}}),window.goForm2JSON||(window.goForm2JSON=function(e){var n={},r=[];if("function"==typeof HTMLFormElement&&e instanceof HTMLFormElement)for(var t in e.elements)(e.elements[t]instanceof HTMLInputElement||e.elements[t]instanceof HTMLSelectElement||e.elements[t]instanceof HTMLTextAreaElement)&&r.push({name:e.elements[t].name,value:e.elements[t].value});else Array.isArray(e)&&(r=e);return n=r.reduce(function(e,n){var r=e,t=n.name.split(".");return t.forEach(function(e,o){var a=e.replace(/\[[0-9]*\]$/,"");if(r.hasOwnProperty(a)||(r[a]=new RegExp("[[0-9]*]$").test(e)?[]:{}),r[a]instanceof Array){var i=parseInt((e.match(new RegExp("([0-9]+)]$"))||[]).pop(),10);return i=isNaN(i)?r[a].length:i,r[a][i]=r[a][i]||{},o===t.length-1?r[a][i]=n.value:r=r[a][i]}return o===t.length-1?r[a]=n.value:r=r[a]}),e},{})});
+		if (!window.goWebFormSubmit) {
 			window.goWebFormSubmit = function(id) {
 				var data = window.goForm2JSON(document.getElementById(id));
 				fetch(id, {
