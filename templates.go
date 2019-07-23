@@ -72,7 +72,7 @@ var formArrayFooter = template.Must(template.New("form/arrayFooter").Parse(`
 	</div>
 	{{if not .Readonly}}
 		<div style="margin:0.4em;margin-bottom:1em">
-			<button class="btn btn-secondary" onclick="goWebFormsAddArrayItem('{{.Name}}', {{.Length}})>{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}</button>
+			<button class="btn btn-secondary" onclick="goWebFormsAddArrayItem('{{.Name}}', {{.Length}})">{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}</button>
 		</div>
 	{{end}}
 `))
