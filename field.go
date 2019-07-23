@@ -5,6 +5,7 @@ type formField struct {
 	Name             string            `yaml:"name"`
 	Description      string            `yaml:"description"`
 	Type             string            `yaml:"type"`
+	ValueType        string            `yaml:"-"`
 	Label            string            `yaml:"label"`
 	ItemLabel        string            `yaml:"itemLabel"`
 	DeleteBtnCaption string            `yaml:"deleteBtnCaption"`
@@ -26,6 +27,7 @@ func (t formField) Copy() formField {
 		Name:             t.Name,
 		Description:      t.Description,
 		Type:             t.Type,
+		ValueType:        t.ValueType,
 		Label:            t.Label,
 		ItemLabel:        t.ItemLabel,
 		DeleteBtnCaption: t.DeleteBtnCaption,

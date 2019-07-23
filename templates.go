@@ -39,7 +39,122 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 			}
 		}
 
-		Array.prototype.reduce||Object.defineProperty(Array.prototype,"reduce",{value:function(e){if(null===this)throw new TypeError("Array.prototype.reduce called on null or undefined");if("function"!=typeof e)throw new TypeError(e+" is not a function");var n,r=Object(this),t=r.length>>>0,o=0;if(arguments.length>=2)n=arguments[1];else{for(;t>o&&!(o in r);)o++;if(o>=t)throw new TypeError("Reduce of empty array with no initial value");n=r[o++]}for(;t>o;)o in r&&(n=e(n,r[o],o,r)),o++;return n}}),window.goForm2JSON||(window.goForm2JSON=function(e){var n={},r=[];if("function"==typeof HTMLFormElement&&e instanceof HTMLFormElement)for(var t in e.elements)(e.elements[t]instanceof HTMLInputElement||e.elements[t]instanceof HTMLSelectElement||e.elements[t]instanceof HTMLTextAreaElement)&&r.push({name:e.elements[t].name,value:e.elements[t].value});else Array.isArray(e)&&(r=e);return n=r.reduce(function(e,n){var r=e,t=n.name.split(".");return t.forEach(function(e,o){var a=e.replace(/\[[0-9]*\]$/,"");if(r.hasOwnProperty(a)||(r[a]=new RegExp("[[0-9]*]$").test(e)?[]:{}),r[a]instanceof Array){var i=parseInt((e.match(new RegExp("([0-9]+)]$"))||[]).pop(),10);return i=isNaN(i)?r[a].length:i,r[a][i]=r[a][i]||{},o===t.length-1?r[a][i]=n.value:r=r[a][i]}return o===t.length-1?r[a]=n.value:r=r[a]}),e},{})});
+		if (!Array.prototype.reduce) {
+			Object.defineProperty(Array.prototype, 'reduce', {
+			  value: function(callback /*, initialValue*/) {
+				if (this === null) {
+				  throw new TypeError( 'Array.prototype.reduce ' +
+					'called on null or undefined' );
+				}
+				if (typeof callback !== 'function') {
+				  throw new TypeError( callback +
+					' is not a function');
+				}
+
+				// 1. Let O be ? ToObject(this value).
+				var o = Object(this);
+
+				// 2. Let len be ? ToLength(? Get(O, "length")).
+				var len = o.length >>> 0;
+
+				// Steps 3, 4, 5, 6, 7
+				var k = 0;
+				var value;
+
+				if (arguments.length >= 2) {
+				  value = arguments[1];
+				} else {
+				  while (k < len && !(k in o)) {
+					k++;
+				  }
+
+				  // 3. If len is 0 and initialValue is not present,
+				  //    throw a TypeError exception.
+				  if (k >= len) {
+					throw new TypeError( 'Reduce of empty array ' +
+					  'with no initial value' );
+				  }
+				  value = o[k++];
+				}
+
+				// 8. Repeat, while k < len
+				while (k < len) {
+				  // a. Let Pk be ! ToString(k).
+				  // b. Let kPresent be ? HasProperty(O, Pk).
+				  // c. If kPresent is true, then
+				  //    i.  Let kValue be ? Get(O, Pk).
+				  //    ii. Let accumulator be ? Call(
+				  //          callbackfn, undefined,
+				  //          « accumulator, kValue, k, O »).
+				  if (k in o) {
+					value = callback(value, o[k], k, o);
+				  }
+
+				  // d. Increase k by 1.
+				  k++;
+				}
+
+				// 9. Return accumulator.
+				return value;
+			  }
+			});
+		  }
+
+		  if (!window.goForm2JSON) {
+			window.goFormConverters = {
+				int: function(value) {
+					return parseInt(value);
+				},
+				float64: function(value) {
+					return parseFloat(value);
+				},
+				bool: function(value) {
+					return value == "true" ? true : false;
+				}
+			}
+
+			window.goForm2JSON = function(form) {
+				var data = {}, form_arr = [];
+				if(typeof HTMLFormElement === "function" && form instanceof HTMLFormElement) {
+					for(var i in form.elements) {
+						if(form.elements[i] instanceof HTMLInputElement ||
+							form.elements[i] instanceof HTMLSelectElement ||
+							form.elements[i] instanceof HTMLTextAreaElement) {
+							var converter = window.goFormConverters[form.elements[i].getAttribute('data-value-type')];
+							form_arr.push({name:form.elements[i].name, value: converter ? converter(form.elements[i].value) : form.elements[i].value });
+						}
+					}
+				}
+				else if(Array.isArray(form)) {
+					form_arr = form;
+				}
+				data = form_arr.reduce(function (r, o) {
+					var s = r, arr = o.name.split('.');
+					arr.forEach((n, k) => {
+						var ck = n.replace(/\[[0-9]*\]$/, "");
+						if (!s.hasOwnProperty(ck))
+							s[ck] = (new RegExp("\[[0-9]*\]$").test(n)) ? [] : {};
+						if (s[ck] instanceof Array) {
+							var i = parseInt((n.match(new RegExp("([0-9]+)\]$")) || []).pop(), 10);
+							i = isNaN(i) ? s[ck].length : i;
+							s[ck][i] = s[ck][i] || {};
+							if(k === arr.length - 1) {
+								return s[ck][i] = o.value;
+							}
+							else {
+								return s = s[ck][i];
+							}
+						}
+						else {
+							return (k === arr.length - 1) ? s[ck] = o.value : s = s[ck];
+						}
+					});
+					return r;
+				}, {});
+				return data;
+			}
+		}
+
 		if (!window.goWebFormSubmit) {
 			window.goWebFormSubmit = function(id) {
 				var data = window.goForm2JSON(document.getElementById(id));
@@ -115,7 +230,7 @@ var formInput = template.Must(template.New("form/input").Parse(`
 		<div class="form-group" style="padding-left: {{.Indent}}em">
 		{{if .Label}} <label class="form-check-label" for="{{.ID}}">{{.Label}}</label>{{end}}
 	{{end}}
-		<input type="{{.Type}}"  name="{{.Name}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} class="form-control" id="{{.ID}}" value="{{.Value}}" placeholder="{{.Placeholder}}"/>
+		<input type="{{.Type}}"  name="{{.Name}}" data-value-type="{{.ValueType}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} class="form-control" id="{{.ID}}" value="{{.Value}}" placeholder="{{.Placeholder}}"/>
 	{{if not .IsArrayItem }}
 		</div>
 	{{end}}
@@ -126,7 +241,7 @@ var formTextarea = template.Must(template.New("form/textarea").Parse(`
 		<div class="form-group" style="padding-left: {{.Indent}}em">
 		{{if .Label}} <label class="form-check-label" for="{{.ID}}">{{.Label}}</label>{{end}}
 	{{end}}
-		<textarea class="form-control" name="{{.Name}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} placeholder="{{.Placeholder}}" id="{{.ID}}" rows="{{.Rows}}">{{.Value}}</textarea>
+		<textarea class="form-control" name="{{.Name}}" data-value-type="{{.ValueType}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} placeholder="{{.Placeholder}}" id="{{.ID}}" rows="{{.Rows}}">{{.Value}}</textarea>
 	{{if not .IsArrayItem }}
 		</div>
 	{{end}}
@@ -137,8 +252,8 @@ var formTextarea = template.Must(template.New("form/textarea").Parse(`
 var formCheckbox = template.Must(template.New("form/checkbox").Parse(`
 	<div class="form-group" style="padding-left: {{.Indent}}em">
 		<div class="form-check">
-			<input class="form-check-input" type="{{.Type}}" name="{{.Name}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} {{if .Value}}checked{{end}}  class="form-control" id="{{.ID}}" value="true" placeholder="{{.Placeholder}}"/>
-			<input type="hidden" name="{{.Name}}" value="false"/>
+			<input class="form-check-input" type="{{.Type}}" name="{{.Name}}" data-value-type="{{.ValueType}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} {{if .Value}}checked{{end}}  class="form-control" id="{{.ID}}" value="true" placeholder="{{.Placeholder}}"/>
+			<input type="hidden" name="{{.Name}}" data-value-type="{{.ValueType}}" value="false"/>
 			{{if not .IsArrayItem }} {{if .Label}} <label class="form-check-label" for="{{.ID}}">{{.Label}}</label>{{end}} {{end}}
 		</div>
 	</div>
@@ -150,7 +265,7 @@ var formSelect = template.Must(template.New("form/select").Parse(`
 		{{if .Label}} <label class="form-check-label" for="{{.ID}}">{{.Label}}</label>{{end}}
 	{{end}}
 	{{$self := .}}
-	<select class="form-control" name="{{.Name}}" id="{{.ID}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} >
+	<select class="form-control" name="{{.Name}}" data-value-type="{{.ValueType}}" id="{{.ID}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} >
 		{{range $v, $t := .Options}}
 			<option {{if eq $self.Value $v}}selected{{end}} value={{$v}}>{{$t}}</option>
 		{{end}}

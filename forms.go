@@ -4,11 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
-	"net/url"
 	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -32,7 +29,6 @@ func MakeHTML(id string, data interface{}, out io.Writer) string {
 func processField(f io.Writer, value reflect.Value, field *formField, xTemplates map[string]bytes.Buffer) {
 	switch value.Type().Kind() {
 	case reflect.Array, reflect.Slice:
-
 		var fieldTemplate *formField
 		if field != nil {
 			field.Length = value.Len()
@@ -145,63 +141,10 @@ func parseTags(sf reflect.StructField) formField {
 	if ff.Label == "" {
 		ff.Label = sf.Name
 	}
+	ff.ValueType = sf.Type.Kind().String()
+	if sf.Type.Kind() == reflect.Slice || sf.Type.Kind() == reflect.Array {
+		ff.ValueType = sf.Type.Elem().Kind().String()
+	}
 
 	return ff
-}
-
-func parseField(value reflect.Value, src reflect.Value, name string, form *url.Values) {
-	switch value.Type().Kind() {
-	case reflect.Struct:
-		for i := 0; i < value.NumField(); i++ {
-			ff := parseTags(value.Type().Field(i))
-			if src.IsValid() && (ff.Skip || ff.Disabled || ff.Readonly) {
-				value.Field(i).Set(src.Field(i))
-				continue
-			}
-			if name != "" {
-				ff.Name = name + "." + ff.Name
-			}
-			if src.IsValid() {
-				parseField(value.Field(i), src.Field(i), ff.Name, form)
-			} else {
-				parseField(value.Field(i), reflect.Value{}, ff.Name, form)
-			}
-		}
-	case reflect.Array, reflect.Slice:
-		i := 0
-		re := regexp.MustCompile(fmt.Sprintf(`%s\[(\d+)\]`, regexp.QuoteMeta(name)))
-		for key := range *form {
-			if regs := re.FindStringSubmatch(key); len(regs) == 2 {
-				id, _ := strconv.ParseInt(regs[1], 10, 64)
-				log.Println(regs[0], id, key)
-				value.Set(reflect.Append(value, reflect.Zero(value.Type().Elem())))
-				if !src.IsValid() || int(id) >= src.Len() {
-					parseField(reflect.Indirect(value.Index(i)), reflect.Value{}, regs[0], form)
-				} else {
-					parseField(reflect.Indirect(value.Index(i)), src.Index(int(id)), regs[0], form)
-				}
-				i++
-				for kk := range *form {
-					if strings.Index(kk, fmt.Sprintf("%s[%d]", name, id)) != -1 {
-						form.Del(kk)
-					}
-				}
-			}
-		}
-
-	case reflect.Bool:
-		v, _ := strconv.ParseBool(form.Get(name))
-		value.SetBool(v)
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		v, _ := strconv.ParseInt(form.Get(name), 10, 64)
-		value.SetInt(v)
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		v, _ := strconv.ParseUint(form.Get(name), 10, 64)
-		value.SetUint(v)
-	case reflect.Float32, reflect.Float64:
-		v, _ := strconv.ParseFloat(form.Get(name), 64)
-		value.SetFloat(v)
-	case reflect.String:
-		value.SetString(form.Get(name))
-	}
 }
