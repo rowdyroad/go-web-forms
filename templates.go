@@ -219,7 +219,7 @@ var formStructHeader = template.Must(template.New("form/structHeader").Parse(`
 var formArrayItemWrapperFooter = template.Must(template.New("form/arrayItemWrapperFooter").Parse(`
 	{{if not .Readonly}}
 		<div style="text-align:right; padding:0.4em 0">
-			<button class="btn btn-danger" onclick="javascript:document.getElementById('item-{{.Name}}').remove()">{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}"</button>
+			<button class="btn btn-danger" onclick="javascript:document.getElementById('item-{{.Name}}').remove()">{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}</button>
 		</div>
 	{{end}}
 	</div>
