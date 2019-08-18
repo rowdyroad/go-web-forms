@@ -10,6 +10,9 @@ type formField struct {
 	ItemLabel        string            `yaml:"itemLabel"`
 	DeleteBtnCaption string            `yaml:"deleteBtnCaption"`
 	AddBtnCaption    string            `yaml:"addBtnCaption"`
+	SetBtnCaption    string            `yaml:"setBtnCaption"`
+	UnsetBtnCaption  string            `yaml:"unsetBtnCaption"`
+	IsNil            bool              `yaml:"-"`
 	Value            interface{}       `yaml:"-"`
 	Disabled         bool              `yaml:"disabled"`
 	Rows             int               `yaml:"rows"`

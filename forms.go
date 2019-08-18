@@ -7,10 +7,13 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"gopkg.in/yaml.v2"
 )
+
+var durationType = reflect.TypeOf(time.Duration(0))
 
 func MakeHTML(id string, data interface{}, out io.Writer) string {
 	templates := map[string]bytes.Buffer{}
@@ -28,6 +31,15 @@ func MakeHTML(id string, data interface{}, out io.Writer) string {
 
 func processField(f io.Writer, value reflect.Value, field *formField, xTemplates map[string]bytes.Buffer) {
 	switch value.Type().Kind() {
+	case reflect.Ptr:
+		field.IsNil = value.IsNil()
+		field.ValueType = value.Type().Elem().String()
+		field.Value = reflect.Zero(value.Type().Elem())
+		formPtrHeader.Execute(f, field)
+		field.Label = ""
+		processField(f, reflect.Zero(value.Type().Elem()), field, xTemplates)
+		formPtrFooter.Execute(f, field)
+		return
 	case reflect.Array, reflect.Slice:
 		var fieldTemplate *formField
 		if field != nil {
@@ -69,9 +81,14 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 		if field.Type == "" {
 			field.Type = "checkbox"
 		}
+
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		if field.Type == "" {
-			field.Type = "number"
+			if value.Type() == durationType {
+				field.Type = "string"
+			} else {
+				field.Type = "number"
+			}
 		}
 	case reflect.Struct:
 		indent := 0

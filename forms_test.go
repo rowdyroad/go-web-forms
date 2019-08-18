@@ -2,23 +2,73 @@ package forms
 
 import (
 	"net/http"
+	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 )
 
-func TestMain(t *testing.T) {
-	type StructBase struct {
-		String  string
-		Int     int
-		Float   float64
-		Bool    bool
-		Strings []string
-		Bools   []bool
-		Ints    []int
-		Floats  []float64
+type SimpleStruct struct {
+	String string
+	Int    int
+	Float  float64
+	Bool   bool
+}
+
+type StructBase struct {
+	String   string
+	Int      int
+	Float    float64
+	Bool     bool
+	Duration time.Duration
+	Strings  []string
+	Bools    []bool
+	Ints     []int
+	Floats   []float64
+
+	StringPtr   *string
+	IntPtr      *int
+	FloatPtr    *float64
+	BoolPtr     *bool
+	DurationPtr *time.Duration
+	StringsPtr  *[]string
+	BoolsPtr    *[]bool
+	IntsPtr     *[]int
+	FloatsPtr   *[]float64
+	StructPtr   *SimpleStruct
+}
+
+func TestPtr(t *testing.T) {
+	s := StructBase{}
+	MakeHTML(strings.Replace(uuid.New().String(), "-", "", -1), s, os.Stdout)
+}
+
+func TestType(t *testing.T) {
+	s := StructBase{
+		String:   "string",
+		Int:      1,
+		Float:    0.5,
+		Bool:     true,
+		Duration: time.Second,
+
+		Strings: []string{"a", "b", "c"},
+		Ints:    []int{10, 20, 30},
+		Floats:  []float64{1.2, 1.5, 2.5},
+		Bools:   []bool{true, true, false},
 	}
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "text/html")
+		w.Write([]byte("<!DOCTYPE html><html><body>"))
+		MakeHTML(strings.Replace(uuid.New().String(), "-", "", -1), s, w)
+		w.Write([]byte("</body></html>"))
+	})
+
+	http.ListenAndServe(":8011", nil)
+}
+
+func TestMain(t *testing.T) {
 
 	type Struct struct {
 		StructBase
@@ -49,10 +99,11 @@ func TestMain(t *testing.T) {
 	data := Struct{
 
 		StructBase: StructBase{
-			String: "string",
-			Int:    1,
-			Float:  0.5,
-			Bool:   true,
+			String:   "string",
+			Int:      1,
+			Float:    0.5,
+			Bool:     true,
+			Duration: time.Second,
 
 			Strings: []string{"a", "b", "c"},
 			Ints:    []int{10, 20, 30},

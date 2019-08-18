@@ -21,6 +21,28 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 		if (!window.goWebFormsIndexes) {
 			window.goWebFormsIndexes = {};
 		}
+
+		if (!window.goWebFormsIgnores) {
+			window.goWebFormsIgnores = [];
+		}
+
+		if (!window.goWebFormsTogglePtrField) {
+			window.goWebFormsTogglePtrField = function(id, setCaption, unsetCaption) {
+				var css = document.getElementById('ptr-'+id).style;
+				if (css.display == 'none') {
+					css.display = '';
+					document.getElementById('ptr-btn-'+id).innerHTML = unsetCaption;
+					var index = window.goWebFormsIgnores.indexOf(id);
+					if (index !== -1) {
+						window.goWebFormsIgnores.splice(index, 1);
+					}
+				} else {
+					css.display = 'none';
+					document.getElementById('ptr-btn-'+id).innerHTML = setCaption;
+					window.goWebFormsIgnores.push(id);
+				}
+			}
+		}
 		if (!window.goWebFormsAddArrayItem) {
 			window.goWebFormsAddArrayItem = function(id, indexMax) {
 				if (!goWebFormsIndexes[id]) {
@@ -121,7 +143,13 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 							form.elements[i] instanceof HTMLSelectElement ||
 							form.elements[i] instanceof HTMLTextAreaElement) {
 							var converter = window.goFormConverters[form.elements[i].getAttribute('data-value-type')];
-							form_arr.push({name:form.elements[i].name, value: converter ? converter(form.elements[i].value) : form.elements[i].value });
+							var name = form.elements[i].name;
+							if (!window.goWebFormsIgnores.some(function(n) {
+								console.log(name, n, name.indexOf(n));
+								return name.indexOf(n) === 0;
+							})) {
+								form_arr.push({name:name, value: converter ? converter(form.elements[i].value) : form.elements[i].value });
+							}
 						}
 					}
 				}
@@ -176,6 +204,37 @@ var formFooter = template.Must(template.New("form/footer").Parse(`
 	</form>
 `))
 
+var formPtrHeader = template.Must(template.New("form/ptrHeader").Parse(`
+	{{if .Label}}
+		<h4>
+			{{.Label}}
+			{{if .Description}}<small><div>{{.Description}}</div></small>{{end}}
+		</h4>
+	{{end}}
+	{{if .IsNil}}
+	<script>
+		window.goWebFormsIgnores.push('{{.Name}}');
+	</script>
+	{{end}}
+	</script>
+	<div id="ptr-{{.Name}}" {{if .IsNil}}style="display:none"{{end}}>
+`))
+
+var formPtrFooter = template.Must(template.New("form/ptrFooter").Parse(`
+	</div>
+	{{if not .Readonly}}
+		<div style="margin:0.4em;margin-bottom:1em">
+			<button type="button" class="btn btn-secondary" id="ptr-btn-{{.Name}}" onclick="goWebFormsTogglePtrField('{{.Name}}', '{{if .SetBtnCaption}}{{.SetBtnCaption}}{{else}}Set{{end}}','{{if .UnsetBtnCaption}}{{.UnsetBtnCaption}}{{else}}Unset{{end}}')">
+			{{if .IsNil}}
+				{{if .SetBtnCaption}}{{.SetBtnCaption}}{{else}}Set{{end}}
+			{{else}}
+				{{if .UnsetBtnCaption}}{{.UnsetBtnCaption}}{{else}}Unset{{end}}
+			{{end}}
+			</button>
+		</div>
+	{{end}}
+`))
+
 var formArrayHeader = template.Must(template.New("form/arrayHeader").Parse(`
 	{{if .Label}}
 		<h4>
@@ -190,7 +249,7 @@ var formArrayFooter = template.Must(template.New("form/arrayFooter").Parse(`
 	</div>
 	{{if not .Readonly}}
 		<div style="margin:0.4em;margin-bottom:1em">
-			<button class="btn btn-secondary" onclick="goWebFormsAddArrayItem('{{.Name}}', {{.Length}})">{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}</button>
+			<button type="button" class="btn btn-secondary" onclick="goWebFormsAddArrayItem('{{.Name}}', {{.Length}})">{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}</button>
 		</div>
 	{{end}}
 `))
@@ -219,7 +278,7 @@ var formStructHeader = template.Must(template.New("form/structHeader").Parse(`
 var formArrayItemWrapperFooter = template.Must(template.New("form/arrayItemWrapperFooter").Parse(`
 	{{if not .Readonly}}
 		<div style="text-align:right; padding:0.4em 0">
-			<button class="btn btn-danger" onclick="javascript:document.getElementById('item-{{.Name}}').remove()">{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}</button>
+			<button type="button" class="btn btn-danger" onclick="javascript:document.getElementById('item-{{.Name}}').remove()">{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}</button>
 		</div>
 	{{end}}
 	</div>
