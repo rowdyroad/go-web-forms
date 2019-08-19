@@ -206,10 +206,10 @@ var formFooter = template.Must(template.New("form/footer").Parse(`
 
 var formPtrHeader = template.Must(template.New("form/ptrHeader").Parse(`
 	{{if .Label}}
-		<h4>
+		<label>
 			{{.Label}}
 			{{if .Description}}<small><div>{{.Description}}</div></small>{{end}}
-		</h4>
+		</label>
 	{{end}}
 	{{if .IsNil}}
 	<script>
@@ -237,10 +237,10 @@ var formPtrFooter = template.Must(template.New("form/ptrFooter").Parse(`
 
 var formArrayHeader = template.Must(template.New("form/arrayHeader").Parse(`
 	{{if .Label}}
-		<h4>
+		<label>
 			{{.Label}}
 			{{if .Description}}<small><div>{{.Description}}</div></small>{{end}}
-		</h4>
+		</label>
 	{{end}}
 	<div id="array-{{.Name}}">
 `))
@@ -258,22 +258,25 @@ var formArrayItemWrapperHeader = template.Must(template.New("form/arrayItemWrapp
 `))
 
 var formStructHeader = template.Must(template.New("form/structHeader").Parse(`
-	{{if .IsArrayItem}}
-		{{if .ItemLabel}}
-			<h4>
-				{{.ItemLabel}}
-				{{if .Description}}<small>{{.Description}}</small>{{end}}
-			</h4>
+	<div class="shadow-sm p-3 mb-5 bg-white rounded">
+		{{if .IsArrayItem}}
+			{{if .ItemLabel}}
+				<label>
+					{{.ItemLabel}}
+					{{if .Description}}<small>{{.Description}}</small>{{end}}
+				</label>
+			{{end}}
+		{{else}}
+			{{if .Label}}
+				<label>
+					{{.Label}}
+					{{if .Description}}<small>{{.Description}}</small>{{end}}
+				</label>
+			{{end}}
 		{{end}}
-	{{else}}
-		{{if .Label}}
-			<h4>
-				{{.Label}}
-				{{if .Description}}<small>{{.Description}}</small>{{end}}
-			</h4>
-		{{end}}
-	{{end}}
 `))
+
+var formStructFooter = template.Must(template.New("form/structFooter").Parse(`</div>`))
 
 var formArrayItemWrapperFooter = template.Must(template.New("form/arrayItemWrapperFooter").Parse(`
 	{{if not .Readonly}}

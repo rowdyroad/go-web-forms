@@ -114,6 +114,9 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 
 			processField(f, value.Field(i), &fd, xTemplates)
 		}
+		if field != nil {
+			formStructFooter.Execute(f, field)
+		}
 		return
 	default:
 		if field.Type == "" {
