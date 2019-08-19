@@ -15,6 +15,7 @@ import (
 
 var durationType = reflect.TypeOf(time.Duration(0))
 
+//MakeHTML main function to create html of form
 func MakeHTML(id string, data interface{}, out io.Writer) string {
 	templates := map[string]bytes.Buffer{}
 	options := map[string]interface{}{

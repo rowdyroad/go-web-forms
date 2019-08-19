@@ -236,22 +236,24 @@ var formPtrFooter = template.Must(template.New("form/ptrFooter").Parse(`
 `))
 
 var formArrayHeader = template.Must(template.New("form/arrayHeader").Parse(`
-	{{if .Label}}
-		<label>
-			{{.Label}}
-			{{if .Description}}<small><div>{{.Description}}</div></small>{{end}}
-		</label>
-	{{end}}
-	<div id="array-{{.Name}}">
+	<div class="shadow-sm p-3 mb-5 bg-white rounded">
+		{{if .Label}}
+			<label>
+				{{.Label}}
+				{{if .Description}}<small><div>{{.Description}}</div></small>{{end}}
+			</label>
+		{{end}}
+		<div id="array-{{.Name}}">
 `))
 
 var formArrayFooter = template.Must(template.New("form/arrayFooter").Parse(`
-	</div>
-	{{if not .Readonly}}
-		<div style="margin:0.4em;margin-bottom:1em">
-			<button type="button" class="btn btn-secondary" onclick="goWebFormsAddArrayItem('{{.Name}}', {{.Length}})">{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}</button>
 		</div>
-	{{end}}
+		{{if not .Readonly}}
+			<div style="margin:0.4em;margin-bottom:1em">
+				<button type="button" class="btn btn-secondary" onclick="goWebFormsAddArrayItem('{{.Name}}', {{.Length}})">{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}</button>
+			</div>
+		{{end}}
+	</div>
 `))
 var formArrayItemWrapperHeader = template.Must(template.New("form/arrayItemWrapperHeader").Parse(`
 	<div id="item-{{.Name}}" class="form-group" style="padding-left: {{.Indent}}em">
