@@ -22,8 +22,8 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 			window.goWebFormsIndexes = {};
 		}
 
-		if (!window.goWebFormsIgnores) {
-			window.goWebFormsIgnores = [];
+		if (!window.goWebFormsNils) {
+			window.goWebFormsNils = [];
 		}
 
 		if (!window.goWebFormsTogglePtrField) {
@@ -32,14 +32,14 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 				if (css.display == 'none') {
 					css.display = '';
 					document.getElementById('ptr-btn-'+id).innerHTML = unsetCaption;
-					var index = window.goWebFormsIgnores.indexOf(id);
+					var index = window.goWebFormsNils.indexOf(id);
 					if (index !== -1) {
-						window.goWebFormsIgnores.splice(index, 1);
+						window.goWebFormsNils.splice(index, 1);
 					}
 				} else {
 					css.display = 'none';
 					document.getElementById('ptr-btn-'+id).innerHTML = setCaption;
-					window.goWebFormsIgnores.push(id);
+					window.goWebFormsNils.push(id);
 				}
 			}
 		}
@@ -144,11 +144,12 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 							form.elements[i] instanceof HTMLTextAreaElement) {
 							var converter = window.goFormConverters[form.elements[i].getAttribute('data-value-type')];
 							var name = form.elements[i].name;
-							if (!window.goWebFormsIgnores.some(function(n) {
-								console.log(name, n, name.indexOf(n));
+							if (!window.goWebFormsNils.some(function(n) {
 								return name.indexOf(n) === 0;
 							})) {
 								form_arr.push({name:name, value: converter ? converter(form.elements[i].value) : form.elements[i].value });
+							} else {
+								form_arr.push({name: name, value: null})
 							}
 						}
 					}
@@ -213,7 +214,7 @@ var formPtrHeader = template.Must(template.New("form/ptrHeader").Parse(`
 	{{end}}
 	{{if .IsNil}}
 	<script>
-		window.goWebFormsIgnores.push('{{.Name}}');
+		window.goWebFormsNils.push('{{.Name}}');
 	</script>
 	{{end}}
 	</script>

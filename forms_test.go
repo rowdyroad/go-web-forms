@@ -53,8 +53,8 @@ func TestB(t *testing.T) {
 		Period       int    `yaml:"period"`
 		OnChangeOnly bool   `yaml:"onChangeOnly"`
 	}{}
-	data :=
-		`mode:1
+
+	data := `mode: 1
 key: xxx
 period: 10
 onChangeOnly: true
@@ -62,8 +62,15 @@ onChangeOnly: true
 	if err := yaml.Unmarshal([]byte(data), &s); err != nil {
 		panic(err)
 	}
-	MakeHTML(strings.Replace(uuid.New().String(), "-", "", -1), s, os.Stderr)
-	t.Error("test")
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "text/html")
+		w.Write([]byte("<!DOCTYPE html><html><body>"))
+		MakeHTML(strings.Replace(uuid.New().String(), "-", "", -1), s, w)
+		w.Write([]byte("</body></html>"))
+	})
+
+	http.ListenAndServe(":8011", nil)
 
 }
 func TestType(t *testing.T) {
