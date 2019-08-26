@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gopkg.in/yaml.v2"
 )
 
 type SimpleStruct struct {
@@ -45,6 +46,26 @@ func TestPtr(t *testing.T) {
 	MakeHTML(strings.Replace(uuid.New().String(), "-", "", -1), s, os.Stdout)
 }
 
+func TestB(t *testing.T) {
+	s := struct {
+		Mode         *int64 `yaml:"mode"`
+		Key          string `yaml:"key"`
+		Period       int    `yaml:"period"`
+		OnChangeOnly bool   `yaml:"onChangeOnly"`
+	}{}
+	data :=
+		`mode:1
+key: xxx
+period: 10
+onChangeOnly: true
+`
+	if err := yaml.Unmarshal([]byte(data), &s); err != nil {
+		panic(err)
+	}
+	MakeHTML(strings.Replace(uuid.New().String(), "-", "", -1), s, os.Stderr)
+	t.Error("test")
+
+}
 func TestType(t *testing.T) {
 	s := StructBase{
 		String:   "string",

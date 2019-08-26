@@ -31,14 +31,19 @@ func MakeHTML(id string, data interface{}, out io.Writer) string {
 }
 
 func processField(f io.Writer, value reflect.Value, field *formField, xTemplates map[string]bytes.Buffer) {
+
 	switch value.Type().Kind() {
 	case reflect.Ptr:
 		field.IsNil = value.IsNil()
 		field.ValueType = value.Type().Elem().String()
-		field.Value = reflect.Zero(value.Type().Elem())
 		formPtrHeader.Execute(f, field)
 		field.Label = ""
-		processField(f, reflect.Zero(value.Type().Elem()), field, xTemplates)
+		if field.IsNil {
+			field.Value = reflect.Zero(value.Type().Elem())
+			processField(f, reflect.Zero(value.Type().Elem()), field, xTemplates)
+		} else {
+			processField(f, value.Elem(), field, xTemplates)
+		}
 		formPtrFooter.Execute(f, field)
 		return
 	case reflect.Array, reflect.Slice:
