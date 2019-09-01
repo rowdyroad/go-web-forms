@@ -23,6 +23,7 @@ type formField struct {
 	Skip             bool              `yaml:"-"`
 	IsArrayItem      bool              `yaml:"-"`
 	Length           int               `yaml:"-"`
+	Template         string            `yaml:"-"`
 }
 
 func (t formField) Copy() formField {

@@ -2,13 +2,11 @@ package forms
 
 import (
 	"net/http"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
-	"gopkg.in/yaml.v2"
 )
 
 type SimpleStruct struct {
@@ -39,61 +37,6 @@ type StructBase struct {
 	IntsPtr     *[]int
 	FloatsPtr   *[]float64
 	StructPtr   *SimpleStruct
-}
-
-func TestPtr(t *testing.T) {
-	s := StructBase{}
-	MakeHTML(strings.Replace(uuid.New().String(), "-", "", -1), s, os.Stdout)
-}
-
-func TestB(t *testing.T) {
-	s := struct {
-		Mode         *int64 `yaml:"mode"`
-		Key          string `yaml:"key"`
-		Period       int    `yaml:"period"`
-		OnChangeOnly bool   `yaml:"onChangeOnly"`
-	}{}
-
-	data := `mode: 1
-key: xxx
-period: 10
-onChangeOnly: true
-`
-	if err := yaml.Unmarshal([]byte(data), &s); err != nil {
-		panic(err)
-	}
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", "text/html")
-		w.Write([]byte("<!DOCTYPE html><html><body>"))
-		MakeHTML(strings.Replace(uuid.New().String(), "-", "", -1), s, w)
-		w.Write([]byte("</body></html>"))
-	})
-
-	http.ListenAndServe(":8011", nil)
-
-}
-func TestType(t *testing.T) {
-	s := StructBase{
-		String:   "string",
-		Int:      1,
-		Float:    0.5,
-		Bool:     true,
-		Duration: time.Second,
-
-		Strings: []string{"a", "b", "c"},
-		Ints:    []int{10, 20, 30},
-		Floats:  []float64{1.2, 1.5, 2.5},
-		Bools:   []bool{true, true, false},
-	}
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-type", "text/html")
-		w.Write([]byte("<!DOCTYPE html><html><body>"))
-		MakeHTML(strings.Replace(uuid.New().String(), "-", "", -1), s, w)
-		w.Write([]byte("</body></html>"))
-	})
-
-	http.ListenAndServe(":8011", nil)
 }
 
 func TestMain(t *testing.T) {
@@ -193,7 +136,14 @@ func TestMain(t *testing.T) {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "text/html")
-		w.Write([]byte("<!DOCTYPE html><html><body>"))
+		w.Write([]byte(`
+		<!DOCTYPE html>
+		<html>
+			<head>
+			<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+			</head>
+			<body>
+		`))
 		MakeHTML(strings.Replace(uuid.New().String(), "-", "", -1), data, w)
 		w.Write([]byte("</body></html>"))
 	})

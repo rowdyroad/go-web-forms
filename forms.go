@@ -17,6 +17,7 @@ var durationType = reflect.TypeOf(time.Duration(0))
 
 //MakeHTML main function to create html of form
 func MakeHTML(id string, data interface{}, out io.Writer) string {
+
 	templates := map[string]bytes.Buffer{}
 	options := map[string]interface{}{
 		"ID": id,
@@ -38,12 +39,16 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 		field.ValueType = value.Type().Elem().String()
 		formPtrHeader.Execute(f, field)
 		field.Label = ""
+		tx := bytes.Buffer{}
+		tx.WriteString(fmt.Sprintf(`<script type="x-template" id="template-%s">`, field.Name))
 		if field.IsNil {
 			field.Value = reflect.Zero(value.Type().Elem())
-			processField(f, reflect.Zero(value.Type().Elem()), field, xTemplates)
+			processField(&tx, reflect.Zero(value.Type().Elem()), field, xTemplates)
 		} else {
-			processField(f, value.Elem(), field, xTemplates)
+			processField(&tx, value.Elem(), field, xTemplates)
 		}
+		tx.WriteString("</script>")
+		xTemplates[field.Name] = tx
 		formPtrFooter.Execute(f, field)
 		return
 	case reflect.Array, reflect.Slice:
@@ -52,17 +57,15 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 			field.Length = value.Len()
 			ft := field.Copy()
 			fieldTemplate = &ft
-			fieldTemplate.ID = fmt.Sprintf("template-%s-id", field.Name)
-			fieldTemplate.Name = fmt.Sprintf("template-%s-name", field.Name)
 			fieldTemplate.IsArrayItem = true
 			formArrayHeader.Execute(f, field)
 
 			tx := bytes.Buffer{}
-			tx.Write([]byte(fmt.Sprintf(`<script type="x-template" id="template-%s">`, field.Name)))
+			tx.WriteString(fmt.Sprintf(`<script type="x-template" id="template-%s">`, field.Name))
 			formArrayItemWrapperHeader.Execute(&tx, fieldTemplate)
 			processField(&tx, reflect.Zero(reflect.TypeOf(value.Interface()).Elem()), fieldTemplate, xTemplates)
 			formArrayItemWrapperFooter.Execute(&tx, fieldTemplate)
-			tx.Write([]byte(`</script>`))
+			tx.WriteString("</script>")
 			xTemplates[fieldTemplate.Name] = tx
 		}
 
