@@ -7,7 +7,5 @@ Bootstrap 4 CSS support.
 
 TODO:
 - documentation
-- examples
-- tests
 - refactoring
 
