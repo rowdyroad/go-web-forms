@@ -40,7 +40,6 @@ type StructBase struct {
 }
 
 func TestMain(t *testing.T) {
-
 	type Struct struct {
 		StructBase
 
@@ -91,6 +90,17 @@ func TestMain(t *testing.T) {
 			Ints:    []int{10, 20, 30},
 			Floats:  []float64{1.2, 1.5, 2.5},
 			Bools:   []bool{true, true, false},
+		},
+		Structs: []StructBase{
+			StructBase{
+				String: "hello 1",
+			},
+			StructBase{
+				String: "hello 2",
+			},
+			StructBase{
+				String: "hello 3",
+			},
 		},
 		Textarea:    "hello\n1\n2\n3\n",
 		CustomLabel: "custom label",

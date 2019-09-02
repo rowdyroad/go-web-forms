@@ -74,6 +74,7 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 			subField.ID = uuid.New().String()
 			subField.Name = fmt.Sprintf("%s[%d]", field.Name, i)
 			subField.Value = value.Index(i).Interface()
+			subField.Index = i + 1
 			subField.IsArrayItem = true
 
 			formArrayItemWrapperHeader.Execute(f, subField)
@@ -100,11 +101,9 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 			}
 		}
 	case reflect.Struct:
-		indent := 0
 
 		if field != nil {
 			formStructHeader.Execute(f, field)
-			indent += field.Indent + 1
 		}
 
 		for i := 0; i < value.NumField(); i++ {
@@ -119,7 +118,6 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 				fd.Disabled = field.Disabled
 			}
 			fd.Value = value.Field(i).Interface()
-			fd.Indent = indent
 
 			processField(f, value.Field(i), &fd, xTemplates)
 		}

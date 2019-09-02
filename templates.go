@@ -42,8 +42,10 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 					elBtn.classList.add('btn-outline-secondary');
 				}
 			},
-			toggleExpand: function(el, query) {
-				var toggle = el.querySelector(query);
+			toggleExpand: function(id) {
+				console.log(id);
+				var toggle = document.getElementById(id);
+				console.log(toggle)
 				if (toggle.style.display === 'none') {
 					toggle.style.display = '';
 				} else {
@@ -57,15 +59,16 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 				var index = window.goWebForms.indexes[id];
 
 				var templateId = id.replace(new RegExp(/\[\d+\]/, 'g'), '');
-
+				var newId = id+'['+window.goWebForms.indexes[id]+']';
 				var cnt = document.getElementById('template-'+templateId)
 									.innerHTML
-									.replaceAll(templateId, id+'['+window.goWebForms.indexes[id]+']');
+									.replaceAll(templateId, newId)
 
 				var e = document.createElement('div');
 				e.innerHTML = cnt;
 				document.getElementById(id).appendChild(e);
 				window.goWebForms.indexes[id] = index + 1;
+				document.getElementById('array-index-'+newId).innerHTML = '#' + (index + 1);
 			},
 			submit: function(id) {
 				var data = window.goWebForms.JSON(document.getElementById(id));
@@ -222,7 +225,7 @@ var formArrayHeader = template.Must(template.New("form/arrayHeader").Parse(`
 			data-template="form/array"
 			data-name="{{.Name}}"
 			data-id="{{.ID}}">
-			<div class="card-header" style="cursor:pointer" onclick="goWebForms.toggleExpand(document, '#array-body-{{.Name}}')">
+			<div class="card-header" style="cursor:pointer" onclick="goWebForms.toggleExpand('array-body-{{.Name}}')">
 				{{.Label}}
 				{{if .Description}}<small><div>{{.Description}}</div></small>{{end}}
 			</div>
@@ -246,12 +249,11 @@ var formArrayItemWrapperHeader = template.Must(template.New("form/arrayItemWrapp
 
 var formStructHeader = template.Must(template.New("form/structHeader").Parse(`
 		<div class="card mb-2 w-100">
-			<div class="card-header" style="cursor:pointer" onclick="goWebForms.toggleExpand(document, '#struct-body-{{.Name}}')">
+			<div class="card-header" style="cursor:pointer" onclick="goWebForms.toggleExpand('struct-body-{{.Name}}')">
 			{{if .IsArrayItem}}
-				{{if .ItemLabel}}
-						{{.ItemLabel}}
-						{{if .Description}}<small>{{.Description}}</small>{{end}}
-				{{end}}
+				<span id="array-index-{{.Name}}">{{if .Index}}#{{.Index}}{{end}}</span> {{.ItemLabel}}
+				{{if .Description}}<small>{{.Description}}</small>{{end}}
+				<button type="button" class="btn btn-danger float-right" onclick="javascript:document.getElementById('{{.Name}}').remove()">{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}</button>
 			{{else}}
 				{{if .Label}}
 					{{.Label}}
@@ -269,9 +271,11 @@ var formStructFooter = template.Must(template.New("form/structFooter").Parse(`
 
 var formArrayItemWrapperFooter = template.Must(template.New("form/arrayItemWrapperFooter").Parse(`
 	{{if not .Readonly}}
-		<div class="input-group-append" data-template="form/arrayItemFooter">
-			<button type="button" class="btn btn-danger" onclick="javascript:document.getElementById('{{.Name}}').remove()">{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}</button>
-		</div>
+		{{if ne .ValueType "struct"}}
+			<div class="input-group-append" data-template="form/arrayItemFooter">
+				<button type="button" class="btn btn-danger" onclick="javascript:document.getElementById('{{.Name}}').remove()">{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}</button>
+			</div>
+		{{end}}
 	{{end}}
 	</div>
 `))

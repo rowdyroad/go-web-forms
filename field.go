@@ -17,7 +17,7 @@ type formField struct {
 	Disabled         bool              `yaml:"disabled"`
 	Rows             int               `yaml:"rows"`
 	Placeholder      string            `yaml:"placeholder"`
-	Indent           int               `yaml:"-"`
+	Index            int               `yaml:"-"`
 	Readonly         bool              `yaml:"readonly"`
 	Options          map[string]string `yaml:"options"`
 	Skip             bool              `yaml:"-"`
