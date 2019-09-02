@@ -55,7 +55,7 @@ func TestMain(t *testing.T) {
 		ReadonlyFloat  float64 `htmlForm:"readonly: true"`
 		ReadonlyBool   bool    `htmlForm:"readonly: true"`
 
-		ReadonlyStrings []string  `htmlForm:"readonly: true"`
+		ReadonlyStrings []string  `htmlForm:"readonly: true; expanded: true"`
 		ReadonlyInts    []int     `htmlForm:"readonly: true"`
 		ReadonlyFloats  []float64 `htmlForm:"readonly: true"`
 		ReadonlyBools   []bool    `htmlForm:"readonly: true"`

@@ -42,6 +42,14 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 					elBtn.classList.add('btn-outline-secondary');
 				}
 			},
+			toggleExpand: function(el, query) {
+				var toggle = el.querySelector(query);
+				if (toggle.style.display === 'none') {
+					toggle.style.display = '';
+				} else {
+					toggle.style.display = 'none';
+				}
+			},
 			addArrayItem: function(id, indexMax) {
 				if (!window.goWebForms.indexes[id]) {
 					window.goWebForms.indexes[id] = indexMax
@@ -192,7 +200,7 @@ var formPtrHeader = template.Must(template.New("form/ptrHeader").Parse(`
 			{{.Label}}
 			{{if .Description}}<small><div>{{.Description}}</div></small>{{end}}
 			{{if not .Readonly}}
-				<button type="button" style="margin-left:1em" id="ptr-btn-{{.Name}}" onclick="window.goWebForms.togglePtrField('{{.Name}}', '{{if .SetBtnCaption}}{{.SetBtnCaption}}{{else}}Set{{end}}','{{if .UnsetBtnCaption}}{{.UnsetBtnCaption}}{{else}}Unset{{end}}')"
+				<button type="button" id="ptr-btn-{{.Name}}" onclick="window.goWebForms.togglePtrField('{{.Name}}', '{{if .SetBtnCaption}}{{.SetBtnCaption}}{{else}}Set{{end}}','{{if .UnsetBtnCaption}}{{.UnsetBtnCaption}}{{else}}Unset{{end}}')"
 				{{if .IsNil}}
 					class="btn btn-outline-secondary btn-sm"> {{if .SetBtnCaption}}{{.SetBtnCaption}}{{else}}Set{{end}}
 				{{else}}
@@ -214,25 +222,23 @@ var formArrayHeader = template.Must(template.New("form/arrayHeader").Parse(`
 			data-template="form/array"
 			data-name="{{.Name}}"
 			data-id="{{.ID}}">
-		{{if .Label}}
-			<div class="card-header">
+			<div class="card-header" style="cursor:pointer" onclick="goWebForms.toggleExpand(document, '#array-body-{{.Name}}')">
 				{{.Label}}
 				{{if .Description}}<small><div>{{.Description}}</div></small>{{end}}
 			</div>
-		{{end}}
-		<div class="card-body">
-			<div id="{{.Name}}">
+			<div class="card-body" id="array-body-{{.Name}}" style="display:{{if .Expanded}}block{{else}}none{{end}}">
+				<div id="{{.Name}}">
 `))
 
 var formArrayFooter = template.Must(template.New("form/arrayFooter").Parse(`
-		</div>
-		{{if not .Readonly}}
-			<div style="margin:0.4em;margin-bottom:1em">
-				<button type="button" class="btn btn-secondary" onclick="window.goWebForms.addArrayItem('{{.Name}}', {{.Length}})">{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}</button>
+				</div>
+				{{if not .Readonly}}
+					<div class="mb-3">
+						<button type="button" class="btn btn-secondary" onclick="window.goWebForms.addArrayItem('{{.Name}}', {{.Length}})">{{if .AddBtnCaption}}{{.AddBtnCaption}}{{else}}Add{{end}}</button>
+					</div>
+				{{end}}
 			</div>
-		{{end}}
 		</div>
-	</div>
 	`))
 var formArrayItemWrapperHeader = template.Must(template.New("form/arrayItemWrapperHeader").Parse(`
 		<div id="{{.Name}}" class="input-group mb-2" data-template="form/arrayItem" data-name="{{.Name}}" data-id="{{.ID}}">
@@ -240,22 +246,20 @@ var formArrayItemWrapperHeader = template.Must(template.New("form/arrayItemWrapp
 
 var formStructHeader = template.Must(template.New("form/structHeader").Parse(`
 		<div class="card mb-2 w-100">
-		{{if .IsArrayItem}}
-			{{if .ItemLabel}}
-				<div class="card-header">
-					{{.ItemLabel}}
-					{{if .Description}}<small>{{.Description}}</small>{{end}}
-				</div>
-			{{end}}
-		{{else}}
-			{{if .Label}}
-				<div class="card-header">
+			<div class="card-header" style="cursor:pointer" onclick="goWebForms.toggleExpand(document, '#struct-body-{{.Name}}')">
+			{{if .IsArrayItem}}
+				{{if .ItemLabel}}
+						{{.ItemLabel}}
+						{{if .Description}}<small>{{.Description}}</small>{{end}}
+				{{end}}
+			{{else}}
+				{{if .Label}}
 					{{.Label}}
 					{{if .Description}}<small>{{.Description}}</small>{{end}}
-				</div>
+				{{end}}
 			{{end}}
-		{{end}}
-		<div class="card-body">
+			</div>
+		<div class="card-body" id="struct-body-{{.Name}}" style="display:{{if .Expanded}}block{{else}}none{{end}}">
 `))
 
 var formStructFooter = template.Must(template.New("form/structFooter").Parse(`
