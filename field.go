@@ -25,6 +25,7 @@ type formField struct {
 	Length           int               `yaml:"-"`
 	Template         string            `yaml:"-"`
 	Expanded         bool              `yaml:"expanded"`
+	ItemsExpanded    bool              `yaml:"itemsExpanded"`
 }
 
 func (t formField) Copy() formField {

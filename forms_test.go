@@ -44,7 +44,7 @@ func TestMain(t *testing.T) {
 		StructBase
 
 		StructOne StructBase
-		Structs   []StructBase
+		Structs   []StructBase `htmlForm:"expanded: true; itemsExpanded: true"`
 
 		Textarea    string `htmlForm:"type: textarea; rows: 10"`
 		CustomLabel string `htmlForm:"label: Custom; description: Custom Description"`

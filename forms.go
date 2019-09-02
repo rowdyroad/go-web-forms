@@ -71,6 +71,7 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 
 		for i := 0; i < value.Len(); i++ {
 			subField := field.Copy()
+			subField.Expanded = field.ItemsExpanded
 			subField.ID = uuid.New().String()
 			subField.Name = fmt.Sprintf("%s[%d]", field.Name, i)
 			subField.Value = value.Index(i).Interface()
