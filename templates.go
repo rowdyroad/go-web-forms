@@ -25,10 +25,10 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 				}
 			},
 			togglePtrField: function(id, setCaption, unsetCaption) {
-				var cnt = document.getElementById('template-'+id).innerHTML;
 				var el = document.getElementById('ptr-'+id);
 				var elBtn = document.getElementById('ptr-btn-'+id);
 				if (el.childElementCount === 0) {
+					var cnt = document.getElementById('template-ptr-'+id).innerHTML;
 					el.style.display = '';
 					el.innerHTML = cnt;
 					elBtn.innerHTML = unsetCaption;
@@ -68,7 +68,14 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 				e.innerHTML = cnt;
 				document.getElementById(id).appendChild(e);
 				window.goWebForms.indexes[id] = index + 1;
-				document.getElementById('array-index-'+newId).innerHTML = '#' + (index + 1);
+				var arrIdx = document.getElementById('array-index-'+newId)
+				if (arrIdx) {
+					arrIdx.innerHTML = '#' + (index + 1);
+				}
+			},
+			removeArrayItem: function(e, id) {
+				e.stopPropagation();
+				document.getElementById(id).remove();
 			},
 			submit: function(id) {
 				var data = window.goWebForms.JSON(document.getElementById(id));
@@ -253,7 +260,7 @@ var formStructHeader = template.Must(template.New("form/structHeader").Parse(`
 			{{if .IsArrayItem}}
 				<span id="array-index-{{.Name}}">{{if .Index}}#{{.Index}}{{end}}</span> {{.ItemLabel}}
 				{{if .Description}}<small>{{.Description}}</small>{{end}}
-				<button type="button" class="btn btn-danger float-right" onclick="javascript:document.getElementById('{{.Name}}').remove()">{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}</button>
+				<button type="button" class="btn btn-danger float-right" onclick="goWebForms.removeArrayItem(event, '{{.Name}}')">{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}</button>
 			{{else}}
 				{{if .Label}}
 					{{.Label}}

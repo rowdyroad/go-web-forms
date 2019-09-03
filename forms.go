@@ -38,17 +38,16 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 		field.IsNil = value.IsNil()
 		field.ValueType = value.Type().Elem().String()
 		formPtrHeader.Execute(f, field)
-		field.Label = ""
 		tx := bytes.Buffer{}
-		tx.WriteString(fmt.Sprintf(`<script type="x-template" id="template-%s">`, field.Name))
-		if field.IsNil {
-			field.Value = reflect.Zero(value.Type().Elem())
-			processField(&tx, reflect.Zero(value.Type().Elem()), field, xTemplates)
-		} else {
-			processField(&tx, value.Elem(), field, xTemplates)
-		}
+		tx.WriteString(fmt.Sprintf(`<script type="x-template" id="template-ptr-%s">`, field.Name))
+		field.Value = reflect.Zero(value.Type().Elem())
+		processField(&tx, reflect.Zero(value.Type().Elem()), field, xTemplates)
 		tx.WriteString("</script>")
-		xTemplates[field.Name] = tx
+		xTemplates["ptr-"+field.Name] = tx
+
+		if !field.IsNil {
+			processField(f, value.Elem(), field, xTemplates)
+		}
 		formPtrFooter.Execute(f, field)
 		return
 	case reflect.Array, reflect.Slice:

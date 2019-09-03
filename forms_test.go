@@ -32,7 +32,7 @@ type StructBase struct {
 	FloatPtr    *float64
 	BoolPtr     *bool
 	DurationPtr *time.Duration
-	StringsPtr  *[]string
+	StringsPtr  *[]string `htmlForm:"expanded: true;"`
 	BoolsPtr    *[]bool
 	IntsPtr     *[]int
 	FloatsPtr   *[]float64
@@ -40,10 +40,11 @@ type StructBase struct {
 }
 
 func TestMain(t *testing.T) {
+
 	type Struct struct {
 		StructBase
 
-		StructOne StructBase
+		StructOne StructBase   `htmlForm:"expanded: true;"`
 		Structs   []StructBase `htmlForm:"expanded: true; itemsExpanded: true"`
 
 		Textarea    string `htmlForm:"type: textarea; rows: 10"`
@@ -66,8 +67,8 @@ func TestMain(t *testing.T) {
 		ReadonlyCustomLabel string `htmlForm:"label: Custom; description: Custom Description; readonly: true"`
 	}
 
+	strs := []string{"1", "2"}
 	data := Struct{
-
 		StructBase: StructBase{
 			String:   "string",
 			Int:      1,
@@ -75,10 +76,11 @@ func TestMain(t *testing.T) {
 			Bool:     true,
 			Duration: time.Second,
 
-			Strings: []string{"a", "b", "c"},
-			Ints:    []int{10, 20, 30},
-			Floats:  []float64{1.2, 1.5, 2.5},
-			Bools:   []bool{true, true, false},
+			Strings:    []string{"a", "b", "c"},
+			Ints:       []int{10, 20, 30},
+			Floats:     []float64{1.2, 1.5, 2.5},
+			Bools:      []bool{true, true, false},
+			StringsPtr: &strs,
 		},
 		StructOne: StructBase{
 			String: "string",
