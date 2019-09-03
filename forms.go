@@ -3,6 +3,7 @@ package forms
 import (
 	"bytes"
 	"fmt"
+	"html/template"
 	"io"
 	"reflect"
 	"regexp"
@@ -68,6 +69,10 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 			tx.WriteString("</script>")
 			xTemplates[fieldTemplate.Name] = tx
 		}
+		var itemTemplate *template.Template
+		if field.ItemTemplate != "" {
+			itemTemplate = template.Must(template.New("item-name-template-" + field.Name).Parse(field.ItemTemplate))
+		}
 
 		for i := 0; i < value.Len(); i++ {
 			subField := field.Copy()
@@ -77,7 +82,12 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 			subField.Value = value.Index(i).Interface()
 			subField.Index = i + 1
 			subField.IsArrayItem = true
-
+			if itemTemplate != nil {
+				var tpl bytes.Buffer
+				if err := itemTemplate.Execute(&tpl, subField.Value); err == nil {
+					subField.ItemLabel = tpl.String()
+				}
+			}
 			formArrayItemWrapperHeader.Execute(f, subField)
 			processField(f, value.Index(i), &subField, xTemplates)
 			formArrayItemWrapperFooter.Execute(f, subField)

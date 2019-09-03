@@ -40,12 +40,11 @@ type StructBase struct {
 }
 
 func TestMain(t *testing.T) {
-
 	type Struct struct {
 		StructBase
 
 		StructOne StructBase   `htmlForm:"expanded: true;"`
-		Structs   []StructBase `htmlForm:"expanded: true; itemsExpanded: true; itemTemplate: {{.Name}}"`
+		Structs   []StructBase `htmlForm:"expanded: true; itemsExpanded: true; itemTemplate: '{{.String}}'"`
 
 		Textarea    string `htmlForm:"type: textarea; rows: 10"`
 		CustomLabel string `htmlForm:"label: Custom; description: Custom Description"`

@@ -68,10 +68,6 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 				e.innerHTML = cnt;
 				document.getElementById(id).appendChild(e);
 				window.goWebForms.indexes[id] = index + 1;
-				var arrIdx = document.getElementById('array-index-'+newId)
-				if (arrIdx) {
-					arrIdx.innerHTML = '#' + (index + 1);
-				}
 			},
 			removeArrayItem: function(e, id) {
 				e.stopPropagation();
@@ -258,7 +254,7 @@ var formStructHeader = template.Must(template.New("form/structHeader").Parse(`
 		<div class="card mb-2 w-100">
 			<div class="card-header" style="cursor:pointer" onclick="goWebForms.toggleExpand('struct-body-{{.Name}}')">
 			{{if .IsArrayItem}}
-				<span id="array-index-{{.Name}}">{{if .Index}}#{{.Index}}{{end}}</span> {{.ItemLabel}}
+				{{.ItemLabel}}
 				{{if .Description}}<small>{{.Description}}</small>{{end}}
 				<button type="button" class="btn btn-danger float-right" onclick="goWebForms.removeArrayItem(event, '{{.Name}}')">{{if .DeleteBtnCaption}}{{.DeleteBtnCaption}}{{else}}Delete{{end}}</button>
 			{{else}}
