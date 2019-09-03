@@ -46,6 +46,7 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 		xTemplates["ptr-"+field.Name] = tx
 
 		if !field.IsNil {
+			field.Value = value.Elem()
 			processField(f, value.Elem(), field, xTemplates)
 		}
 		formPtrFooter.Execute(f, field)

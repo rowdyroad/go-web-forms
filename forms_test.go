@@ -45,7 +45,7 @@ func TestMain(t *testing.T) {
 		StructBase
 
 		StructOne StructBase   `htmlForm:"expanded: true;"`
-		Structs   []StructBase `htmlForm:"expanded: true; itemsExpanded: true"`
+		Structs   []StructBase `htmlForm:"expanded: true; itemsExpanded: true; itemTemplate: {{.Name}}"`
 
 		Textarea    string `htmlForm:"type: textarea; rows: 10"`
 		CustomLabel string `htmlForm:"label: Custom; description: Custom Description"`
@@ -81,6 +81,7 @@ func TestMain(t *testing.T) {
 			Floats:     []float64{1.2, 1.5, 2.5},
 			Bools:      []bool{true, true, false},
 			StringsPtr: &strs,
+			StringPtr:  &strs[0],
 		},
 		StructOne: StructBase{
 			String: "string",
