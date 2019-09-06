@@ -13,6 +13,7 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 	if (!window.goWebForms) {
 		window.goWebForms = {
 			indexes: {},
+			nils:{},
 			converters: {
 				int: function(value) {
 					return parseInt(value);
@@ -34,7 +35,9 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 					elBtn.innerHTML = unsetCaption;
 					elBtn.classList.add('btn-danger');
 					elBtn.classList.remove('btn-outline-secondary');
+					delete goWebForms.nils[id];
 				} else {
+					goWebForms.nils[id] = true;
 					el.style.display = 'none';
 					el.innerHTML = '';
 					elBtn.innerHTML = setCaption;
@@ -100,6 +103,10 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 				else if(Array.isArray(form)) {
 					form_arr = form;
 				}
+
+				Object.keys(goWebForms.nils).forEach(function(key) {
+					form_arr.push({name:key, value: null});
+				})
 
 				data = form_arr.reduce(function (r, o) {
 					var s = r, arr = o.name.split('.');
