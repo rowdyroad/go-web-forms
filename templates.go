@@ -55,6 +55,9 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 					toggle.style.display = 'none';
 				}
 			},
+			checkboxOnChange: function(el, id) {
+				document.getElementsByName(id)[0].value = el.checked;
+			},
 			addArrayItem: function(id, indexMax) {
 				if (!window.goWebForms.indexes[id]) {
 					window.goWebForms.indexes[id] = indexMax
@@ -96,7 +99,9 @@ var formHeader = template.Must(template.New("form/header").Parse(`
 							form.elements[i] instanceof HTMLTextAreaElement) {
 							var converter = window.goWebForms.converters[form.elements[i].getAttribute('data-value-type')];
 							var name = form.elements[i].name;
-							form_arr.push({name:name, value: converter ? converter(form.elements[i].value) : form.elements[i].value });
+							if (name.length > 0) {
+								form_arr.push({name:name, value: converter ? converter(form.elements[i].value) : form.elements[i].value });
+							}
 						}
 					}
 				}
@@ -315,8 +320,8 @@ var formTextarea = template.Must(template.New("form/textarea").Parse(`
 var formCheckbox = template.Must(template.New("form/checkbox").Parse(`
 		<div class="form-group">
 		<div class="form-check">
-			<input class="form-check-input" type="{{.Type}}" name="{{.Name}}" data-value-type="{{.ValueType}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} {{if .Value}}checked{{end}}  class="form-control" id="{{.ID}}" value="true" placeholder="{{.Placeholder}}"/>
-			<input type="hidden" name="{{.Name}}" data-value-type="{{.ValueType}}" value="false"/>
+			<input class="form-check-input" type="{{.Type}}" {{if .Disabled}}disabled{{end}} {{if .Readonly}}readonly{{end}} {{if .Value}}checked{{end}} onchange="goWebForms.checkboxOnChange(this, '{{.Name}}')" class="form-control" id="{{.ID}}" placeholder="{{.Placeholder}}"/>
+			<input type="hidden" name="{{.Name}}" data-value-type="{{.ValueType}}" value="{{.Value}}"/>
 			{{if not .IsArrayItem }} {{if .Label}} <label class="form-check-label" for="{{.ID}}">{{.Label}}</label>{{end}} {{end}}
 		</div>
 	</div>

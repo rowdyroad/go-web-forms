@@ -42,7 +42,6 @@ type StructBase struct {
 func TestMain(t *testing.T) {
 	type Struct struct {
 		StructBase
-
 		StructOne StructBase   `htmlForm:"expanded: true;"`
 		Structs   []StructBase `htmlForm:"expanded: true; itemsExpanded: true; itemTemplate: '{{.String}}'"`
 
@@ -86,7 +85,7 @@ func TestMain(t *testing.T) {
 			String: "string",
 			Int:    1,
 			Float:  0.5,
-			Bool:   true,
+			Bool:   false,
 
 			Strings: []string{"a", "b", "c"},
 			Ints:    []int{10, 20, 30},
