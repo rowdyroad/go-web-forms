@@ -118,6 +118,9 @@ func processField(f io.Writer, value reflect.Value, field *formField, xTemplates
 		}
 
 		for i := 0; i < value.NumField(); i++ {
+			if value.Type().Field(i).PkgPath != "" {
+				continue
+			}
 			fd := parseTags(value.Type().Field(i))
 			if fd.Skip {
 				continue
